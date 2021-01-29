@@ -7,13 +7,13 @@
 #define FLOOR_HEIGHT 9
 
 // Global Variables
-int init_zoom_time = 0.0;
 bool isZoomingIn = false;
 bool isZoomingOut = false;
 float camera_fov = 40.0;
 
+bool isRotatingLeft = false;
+bool isRotatingRight = false;
 float camera_theta = 0.0;
-int init_time = 0;
 
 // Vertex Buffer Object Ids
 GLuint board_vcs_vbo, board_index_vbo;
@@ -174,8 +174,6 @@ void EightQueens::init()
 {
     glewInit();
 
-    init_time = glutGet(GLUT_ELAPSED_TIME);
-
     glClearColor(0.2, 0.2, 0.2, 0.0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -208,7 +206,6 @@ void EightQueens::camera_config(int w, int h, float t, float fov)
 
 void EightQueens::timer(int value)
 {
-    camera_theta += 0.5;
 
     // Zoom in/out if the user is currently pressing the up or down arrow
     if (isZoomingIn)
@@ -220,6 +217,16 @@ void EightQueens::timer(int value)
     {
         if (camera_fov <= 100)
             camera_fov += 0.5;
+    }
+
+    // Rotate left/right if the user is currently pressing the left or right arrow
+    if (isRotatingLeft)
+    {
+        camera_theta += 0.5;
+    }
+    else if (isRotatingRight)
+    {
+        camera_theta -= 0.5;
     }
 
     auto w = glutGet(GLUT_WINDOW_WIDTH);
@@ -242,13 +249,21 @@ void EightQueens::keyboard(int key, int x, int y)
     case GLUT_KEY_UP:
         // Start Zooming in
         isZoomingIn = true;
-        init_zoom_time = glutGet(GLUT_ELAPSED_TIME);
         break;
 
     case GLUT_KEY_DOWN:
         // Start Zooming out
         isZoomingOut = true;
-        init_zoom_time = glutGet(GLUT_ELAPSED_TIME);
+        break;
+
+    case GLUT_KEY_LEFT:
+        // Start rotating left
+        isRotatingLeft = true;
+        break;
+
+    case GLUT_KEY_RIGHT:
+        // Start rotating right
+        isRotatingRight = true;
         break;
 
     default:
@@ -268,6 +283,16 @@ void EightQueens::keyboard_up(int key, int x, int y)
     case GLUT_KEY_DOWN:
         // Stop Zooming out
         isZoomingOut = false;
+        break;
+
+    case GLUT_KEY_LEFT:
+        // Stop rotating left
+        isRotatingLeft = false;
+        break;
+
+    case GLUT_KEY_RIGHT:
+        // Stop rotating right
+        isRotatingRight = false;
         break;
 
     default:
