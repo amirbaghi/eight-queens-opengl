@@ -87,6 +87,7 @@ void EightQueens::render_objs()
 {
     glMatrixMode(GL_MODELVIEW);
 
+    // Setting material properties for the pieces
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
@@ -105,15 +106,20 @@ void EightQueens::render()
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
 
+    glEnableClientState(GL_VERTEX_ARRAY);
     glDisable(GL_LIGHTING);
 
     // Render the board
     render_board();
 
     glEnable(GL_LIGHTING);
+    glEnableClientState(GL_NORMAL_ARRAY);
 
     // Render the objects
     render_objs();
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
 
     glutSwapBuffers();
 }
@@ -211,11 +217,30 @@ void EightQueens::init_objs()
 {
     std::srand((unsigned int)time(NULL));
 
+    // Generating the queen pieces with a random row and column for each
     for (int i = 0; i < 8; i++)
     {
-        auto row = 1 + (std::rand() % (8 - 1 + 1));
-        auto col = 1 + (std::rand() % (8 - 1 + 1));
+        int row, col;
+        bool hasConflict;
 
+        // Calculating a random row and col and checking for conflict with other pieces' position
+        // If so, calculate another random row and col
+        do
+        {
+            row = 1 + (std::rand() % (8 - 1 + 1));
+            col = 1 + (std::rand() % (8 - 1 + 1));
+            hasConflict = false;
+            for (QueenPiece piece : pieces)
+            {
+                if (piece.row == row && piece.col == col)
+                {
+                    hasConflict = true;
+                }
+            }
+
+        } while (hasConflict);
+
+        // Calculating the position of the square center at the given row and col
         double x = board_vertices[((row - 1) * 9 + (col - 1)) * 3] + 0.5;
         double z = board_vertices[((row - 1) * 9 + (col - 1)) * 3 + 2] + 0.5;
         double y = 0;
@@ -241,8 +266,6 @@ void EightQueens::init()
 
     // Initializing the objects
     init_objs();
-
-    glEnableClientState(GL_VERTEX_ARRAY);
 
     // Initializing the lightning
     init_light();

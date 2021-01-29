@@ -19,11 +19,6 @@ public:
         double x, y, z;
     };
 
-    // Face Struct
-    struct face
-    {
-        unsigned int v1, v2, v3, v4;
-    };
 
     Object3D();
     Object3D(const char *filename);
@@ -34,13 +29,15 @@ public:
     void setPosition(vertex pos);
     void setColor(vertex color);
     void readFile(const char *filename);
+    void initBuffers();
     void render();
 
     int name;
+    unsigned int vertex_vbo_id, normals_vbo_id, element_vbo_id;
 
 private:
     std::vector<vertex> vertices;
-    std::vector<face> faces;
+    std::vector<unsigned int> faces;
     std::vector<vertex> normals;
     vertex color;
     vertex position;
