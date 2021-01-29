@@ -13,6 +13,9 @@ namespace EightQueens
     // Function for rendering the chess board
     void render_board();
 
+    // Function for rendering the chess pieces
+    void render_objs();
+
     // Initialization Function
     void init();
 
@@ -21,6 +24,9 @@ namespace EightQueens
 
     // Funciton for initializing the lightning
     void init_light();
+
+    // Function for initializing the objects
+    void init_objs();
     
     // Main Function
     int main(int argc, char **argv);

@@ -1,5 +1,7 @@
 #include "Headers/EightQueens.h"
+#include "Headers/QueenPiece.h"
 #include <iostream>
+#include <vector>
 #include <GL/glew.h>
 #include <GL/glut.h>
 
@@ -14,6 +16,21 @@ float camera_fov = 40.0;
 bool isRotatingLeft = false;
 bool isRotatingRight = false;
 float camera_theta = 0.0;
+
+// Light variables
+float ambient[] = {0.2f, 0.2f, 0.2f, 0.3f};
+float diffuse[] = {0.4f, 0.4f, 0.4f, 0.3f};
+float specular[] = {0.4f, 0.4f, 0.4f, 0.3f};
+float position[] = {200.0f, 300.0f, -400.0f, 0.0f};
+
+// Material variables
+float mat_ambient[] = {0.25f, 0.148f, 0.06475f, 1.0f};
+float mat_diffuse[] = {0.4f, 0.2368f, 0.1036f, 1.0f};
+float mat_specular[] = {0.774597f, 0.458561f, 0.200621f, 1.0f};
+float shine = 10.8f;
+
+// Queen Pieces vector
+std::vector<QueenPiece> pieces(8);
 
 // Vertex Buffer Object Ids
 GLuint board_vcs_vbo, board_index_vbo;
@@ -30,9 +47,15 @@ void EightQueens::render_board()
     // glPushAttrib(GL_LINE_BIT);
     // glLineWidth(3);
     // glBegin(GL_LINES);
-    // glColor3f(1.0, 0, 0); glVertex3f(0, 0, 0); glVertex3f(5, 0, 0);
-    // glColor3f(0, 1.0, 0); glVertex3f(0, 0, 0); glVertex3f(0, 5, 0);
-    // glColor3f(0, 0, 1.0); glVertex3f(0, 0, 0); glVertex3f(0, 0, 5);
+    // glColor3f(1.0, 0, 0);
+    // glVertex3f(0, 0, 0);
+    // glVertex3f(5, 0, 0);
+    // glColor3f(0, 1.0, 0);
+    // glVertex3f(0, 0, 0);
+    // glVertex3f(0, 5, 0);
+    // glColor3f(0, 0, 1.0);
+    // glVertex3f(0, 0, 0);
+    // glVertex3f(0, 0, 5);
     // glEnd();
     // glPopAttrib();
 
@@ -60,6 +83,23 @@ void EightQueens::render_board()
     glPopAttrib();
 }
 
+void EightQueens::render_objs()
+{
+    glMatrixMode(GL_MODELVIEW);
+
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shine);
+
+    for (QueenPiece piece : pieces)
+    {
+        piece.render();
+    }
+
+    glLoadName(-1);
+}
+
 void EightQueens::render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -71,6 +111,9 @@ void EightQueens::render()
     render_board();
 
     glEnable(GL_LIGHTING);
+
+    // Render the objects
+    render_objs();
 
     glutSwapBuffers();
 }
@@ -158,16 +201,29 @@ void EightQueens::init_light()
 
     glEnable(GL_LIGHT0);
 
-    // Candle Yellow Light
-    float light0_diffuse[] = {255.0 / 255.0, 147.0 / 255.0, 41.0 / 255.0, 1.0};
-    float light0_specular[] = {255.0 / 255.0, 147.0 / 255.0, 41.0 / 255.0, 1.0};
-    float light0_ambient[] = {255.0 / 255.0, 147.0 / 255.0, 41.0 / 255.0, 1.0};
-    float light0_pos[] = {3, 3, 3, 1};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+    glLightfv(GL_LIGHT0, GL_POSITION, position);
+}
 
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light0_specular);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light0_ambient);
-    glLightfv(GL_LIGHT0, GL_POSITION, light0_pos);
+void EightQueens::init_objs()
+{
+    std::srand((unsigned int)time(NULL));
+
+    for (int i = 0; i < 8; i++)
+    {
+        auto row = 1 + (std::rand() % (8 - 1 + 1));
+        auto col = 1 + (std::rand() % (8 - 1 + 1));
+
+        double x = board_vertices[((row - 1) * 9 + (col - 1)) * 3] + 0.5;
+        double z = board_vertices[((row - 1) * 9 + (col - 1)) * 3 + 2] + 0.5;
+        double y = 0;
+
+        QueenPiece p(row, col, i, Object3D::vertex(x, y, z));
+
+        pieces.push_back(p);
+    }
 }
 
 void EightQueens::init()
@@ -178,9 +234,13 @@ void EightQueens::init()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glShadeModel(GL_SMOOTH);
 
     // Initializing the board
     init_board();
+
+    // Initializing the objects
+    init_objs();
 
     glEnableClientState(GL_VERTEX_ARRAY);
 
