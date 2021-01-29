@@ -10,7 +10,7 @@
 int init_zoom_time = 0.0;
 bool isZoomingIn = false;
 bool isZoomingOut = false;
-float camera_fov = 20.0;
+float camera_fov = 40.0;
 
 float camera_theta = 0.0;
 int init_time = 0;
@@ -62,30 +62,6 @@ void EightQueens::render_board()
 
 void EightQueens::render()
 {
-    int current_time = glutGet(GLUT_ELAPSED_TIME);
-    auto diff_time = (current_time - init_time) / 1000.0;
-
-    camera_theta = diff_time * 2.0;
-
-    // Zoom in/out if the user is currently pressing the up or down arrow
-    if (isZoomingIn)
-    {
-        auto diff_zoom_time = (current_time - init_zoom_time) / 1000.0;
-        if (camera_fov >= 0)
-            camera_fov -= diff_time * 0.002;
-    }
-    else if (isZoomingOut)
-    {
-        auto diff_zoom_time = (current_time - init_zoom_time) / 1000.0;
-        if (camera_fov <= 100)
-            camera_fov += diff_time * 0.002;
-    }
-
-    auto w = glutGet(GLUT_WINDOW_WIDTH);
-    auto h = glutGet(GLUT_WINDOW_HEIGHT);
-
-    camera_config(w, h, camera_theta, camera_fov);
-
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -112,6 +88,7 @@ void EightQueens::init_board()
             board_vertices[((i * FLOOR_WIDTH + j) * 3)] = x;
             board_vertices[((i * FLOOR_WIDTH + j) * 3) + 1] = 0;
             board_vertices[((i * FLOOR_WIDTH + j) * 3) + 2] = z;
+            camera_fov -= 0.2;
         }
     }
 
@@ -229,6 +206,30 @@ void EightQueens::camera_config(int w, int h, float t, float fov)
     glRotatef(t, 0, 1, 0);
 }
 
+void EightQueens::timer(int value)
+{
+    camera_theta += 0.5;
+
+    // Zoom in/out if the user is currently pressing the up or down arrow
+    if (isZoomingIn)
+    {
+        if (camera_fov >= 0)
+            camera_fov -= 0.5;
+    }
+    else if (isZoomingOut)
+    {
+        if (camera_fov <= 100)
+            camera_fov += 0.5;
+    }
+
+    auto w = glutGet(GLUT_WINDOW_WIDTH);
+    auto h = glutGet(GLUT_WINDOW_HEIGHT);
+
+    camera_config(w, h, camera_theta, camera_fov);
+
+    glutTimerFunc(25, timer, value + 1);
+}
+
 void EightQueens::reshape(int w, int h)
 {
     camera_config(w, h, camera_theta, camera_fov);
@@ -288,5 +289,6 @@ int EightQueens::main(int argc, char **argv)
     glutReshapeFunc(reshape);
     glutSpecialFunc(keyboard);
     glutSpecialUpFunc(keyboard_up);
+    glutTimerFunc(25, timer, 0);
     glutMainLoop();
 }

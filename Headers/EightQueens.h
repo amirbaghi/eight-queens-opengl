@@ -28,6 +28,9 @@ namespace EightQueens
     // Camera Configuration Function
     void camera_config(int w, int h, float t, float fov);
 
+    // Timer Function
+    void timer(int value);
+
     // Reshape Function
     void reshape(int w, int h);
 
