@@ -6,8 +6,12 @@
 #define FLOOR_WIDTH 9
 #define FLOOR_HEIGHT 9
 
+// Global Variables
 float camera_theta = 0.0;
 int init_time = 0;
+
+// Vertex Buffer Object Ids
+GLuint board_vcs_vbo, board_index_vbo;
 
 // Arrays for the checkered board vertices and the indices for the black and white squares and the outline
 GLfloat board_vertices[FLOOR_HEIGHT * FLOOR_WIDTH * 3];
@@ -30,19 +34,23 @@ void EightQueens::render_board()
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    glVertexPointer(3, GL_FLOAT, 0, board_vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, board_vcs_vbo);
+    glVertexPointer(3, GL_FLOAT, 0, NULL);
 
     // Draw the white squares
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo);
     glColor3f(1.0, 1.0, 1.0);
-    glDrawElements(GL_QUADS, sizeof(white_square_indices) / 4, GL_UNSIGNED_INT, white_square_indices);
+    glDrawElements(GL_QUADS, sizeof(white_square_indices) / 4, GL_UNSIGNED_INT, NULL);
 
     // Draw the black squares
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo + 1);
     glColor3f(0.0, 0.0, 0.0);
-    glDrawElements(GL_QUADS, sizeof(black_square_indices) / 4, GL_UNSIGNED_INT, black_square_indices);
+    glDrawElements(GL_QUADS, sizeof(black_square_indices) / 4, GL_UNSIGNED_INT, NULL);
 
     // Draw the board outline
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo + 2);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_QUADS, sizeof(board_outline_indices) / 4, GL_UNSIGNED_INT, board_outline_indices);
+    glDrawElements(GL_QUADS, sizeof(board_outline_indices) / 4, GL_UNSIGNED_INT, NULL);
 
     glPopAttrib();
 }
@@ -123,6 +131,25 @@ void EightQueens::init_board()
     board_outline_indices[1] = FLOOR_HEIGHT * (FLOOR_WIDTH - 1);
     board_outline_indices[2] = FLOOR_HEIGHT * (FLOOR_WIDTH - 1) + (FLOOR_HEIGHT - 1);
     board_outline_indices[3] = 0 + (FLOOR_HEIGHT - 1);
+
+    // Initialzing the board vertex and index buffers
+    glGenBuffers(1, &board_vcs_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, board_vcs_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(board_vertices), board_vertices, GL_STATIC_DRAW);
+
+    glGenBuffers(3, &board_index_vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(white_square_indices), white_square_indices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo + 1);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(black_square_indices), black_square_indices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo + 2);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(board_outline_indices), board_outline_indices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, NULL);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+
 }
 
 void EightQueens::init()
