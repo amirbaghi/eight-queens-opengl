@@ -54,7 +54,7 @@ void QueenPiece::update(int time)
         // If the piece is ascending
         case ASCENDING:
             // If the piece has reached high enough
-            if (model.getPosition().y >= 0.8)
+            if (model.getPosition().y >= 1.6)
             {
                 // Change motion to going forward
                 this->motion = FORWARD;

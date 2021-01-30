@@ -13,7 +13,8 @@ public:
     Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color, int name);
 
     std::vector<vertex> getVertices() { return vertices; };
-    
+
+    void setColor(color4 color);
     void initBuffers();
     void render();
 
