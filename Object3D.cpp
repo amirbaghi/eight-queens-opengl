@@ -1,10 +1,9 @@
-#include "Headers/Object3D.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <unistd.h>
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include "Headers/Object3D.h"
 
 Object3D::Object3D()
 {
@@ -29,7 +28,7 @@ void Object3D::initBuffers()
 
     glGenBuffers(1, &element_vbo_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, faces.size() * sizeof(unsigned int), &faces[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, faces.size() * sizeof(GLuint), &faces[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -45,7 +44,6 @@ void Object3D::setColor(vertex color)
     this->color = color;
 }
 
-// TODO: Render using BUFFERS
 void Object3D::render()
 {
 
@@ -59,7 +57,7 @@ void Object3D::render()
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo_id);
 
-    glDrawElements(GL_QUADS, (faces.size() * sizeof(unsigned int)) / 4, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_QUADS, (faces.size() * sizeof(GLuint)) / 4, GL_UNSIGNED_INT, NULL);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

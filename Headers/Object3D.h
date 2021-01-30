@@ -1,4 +1,5 @@
 #include <vector>
+#include <GL/glut.h>
 
 // 3D Objects Model Class
 class Object3D
@@ -33,11 +34,11 @@ public:
     void render();
 
     int name;
-    unsigned int vertex_vbo_id, normals_vbo_id, element_vbo_id;
+    GLuint vertex_vbo_id, normals_vbo_id, element_vbo_id;
 
 private:
     std::vector<vertex> vertices;
-    std::vector<unsigned int> faces;
+    std::vector<GLuint> faces;
     std::vector<vertex> normals;
     vertex color;
     vertex position;

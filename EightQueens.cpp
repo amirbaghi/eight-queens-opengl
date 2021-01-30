@@ -1,12 +1,12 @@
-#include "Headers/EightQueens.h"
-#include "Headers/QueenPiece.h"
 #include <iostream>
 #include <vector>
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include "Headers/QueenPiece.h"
+#include "Headers/EightQueens.h"
 
 #define FLOOR_WIDTH 9
 #define FLOOR_HEIGHT 9
+#define BUFFSIZE 512
 
 // Global Variables
 bool isZoomingIn = false;
@@ -88,10 +88,10 @@ void EightQueens::render_objs()
     glMatrixMode(GL_MODELVIEW);
 
     // Setting material properties for the pieces
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shine);
+    // glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+    // glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+    // glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+    // glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shine);
 
     for (QueenPiece piece : pieces)
     {
@@ -287,6 +287,96 @@ void EightQueens::camera_config(int w, int h, float t, float fov)
     glRotatef(t, 0, 1, 0);
 }
 
+void EightQueens::mouse_func(int button, int state, int x, int y)
+{
+    GLuint selectBuf[BUFFSIZE];
+    GLint hits;
+    GLint viewport[4];
+    if (button != GLUT_LEFT_BUTTON || state != GLUT_DOWN)
+        return;
+
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glSelectBuffer(BUFFSIZE, selectBuf);
+    glRenderMode(GL_SELECT);
+
+    glInitNames();
+    glPushName(-1);
+
+    // PICK MATRIX
+    
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluPickMatrix((GLdouble)x, (GLdouble)(viewport[3] - y), 10.0, 10.0, viewport);
+
+    // ORIGINAL PROJECTION MATRIX
+
+    auto w = glutGet(GLUT_WINDOW_WIDTH);
+    auto h = glutGet(GLUT_WINDOW_HEIGHT);
+
+    gluPerspective(camera_fov, (float)w / (float)h, 2.0, 500.0);
+
+    gluLookAt(
+        10, 10, 20,
+        0, 0, 0,
+        0, 1, 0);
+
+    glRotatef(camera_theta, 0, 1, 0);
+
+    // RENDER
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glDisable(GL_LIGHTING);
+
+    // Render the board
+    render_board();
+
+    glEnable(GL_LIGHTING);
+    glEnableClientState(GL_NORMAL_ARRAY);
+
+    // Render the objects
+    render_objs();
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+
+    glPopMatrix();
+    glutSwapBuffers();
+
+    hits = glRenderMode(GL_RENDER);
+    select(hits, selectBuf);
+}
+
+void EightQueens::select(GLint hits, GLuint buffer[])
+{
+    unsigned int i, j;
+    GLuint names, *ptr;
+    float z1, z2;
+    printf("hits = %d\n", hits);
+
+    ptr = (GLuint *)buffer;
+    for (i = 0; i < hits; i++)
+    {
+        names = *ptr;
+        ptr++;
+        z1 = (float)*ptr / 0xffffffff;
+        ptr++;
+        z2 = (float)*ptr / 0xffffffff;
+        ptr++;
+
+        printf(" number of names for hit = %d\n", names);
+        printf(" z1 is %g; z2 is %g\n", z1, z2);
+        printf(" the name is ");
+        for (j = 0; j < names; j++)
+        {
+            printf("%d ", *ptr);
+            ptr++;
+        }
+
+        printf("\n");
+    }
+}
+
 void EightQueens::timer(int value)
 {
 
@@ -386,7 +476,7 @@ void EightQueens::keyboard_up(int key, int x, int y)
 int EightQueens::main(int argc, char **argv)
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(800, 600);
     glutCreateWindow("Eight Queens");
 
@@ -397,6 +487,7 @@ int EightQueens::main(int argc, char **argv)
     glutReshapeFunc(reshape);
     glutSpecialFunc(keyboard);
     glutSpecialUpFunc(keyboard_up);
+    glutMouseFunc(mouse_func);
     glutTimerFunc(25, timer, 0);
     glutMainLoop();
 }

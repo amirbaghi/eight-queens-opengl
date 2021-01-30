@@ -1,3 +1,5 @@
+#include <GL/glut.h>
+
 namespace EightQueens
 {
 
@@ -39,5 +41,11 @@ namespace EightQueens
 
     // Reshape Function
     void reshape(int w, int h);
+
+    // Mouse Func Function
+    void mouse_func(int button, int state, int x, int y);
+
+    // Selection Function
+    void select(GLint hits, GLuint buffer[]);
 
 } // namespace EightQueens
