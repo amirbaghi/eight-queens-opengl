@@ -39,24 +39,40 @@ void Object3D::setPosition(vertex pos)
     this->position = pos;
 }
 
-void Object3D::setColor(vertex color)
+void Object3D::setColor(color4 color)
 {
-    this->color = color;
+    std::vector<color4> temp_colors;
+
+    for (int i = 0 ; i < vertices.size() ; i++ )
+    {
+        temp_colors.push_back(color);
+    }
+
+    this->colors = temp_colors;
+
+    glGenBuffers(1, &colors_vbo_id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, colors_vbo_id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, colors.size() * sizeof(color4), &colors[0], GL_STATIC_DRAW);
 }
 
 void Object3D::render()
 {
 
-    glColor3f(this->color.x, this->color.y, this->color.z);
-
     glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo_id);
     glVertexPointer(3, GL_DOUBLE, 0, NULL);
+
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo_id);
+    glColorPointer(4, GL_FLOAT, 0, NULL);
+
+    glEnable (GL_COLOR_MATERIAL);
+    glColorMaterial (GL_FRONT, GL_DIFFUSE);
+    glColorMaterial (GL_FRONT, GL_SPECULAR);
+    glColorMaterial (GL_FRONT, GL_AMBIENT);
 
     glBindBuffer(GL_ARRAY_BUFFER, normals_vbo_id);
     glNormalPointer(GL_DOUBLE, 0, NULL);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo_id);
-
     glDrawElements(GL_QUADS, (faces.size() * sizeof(GLuint)) / 4, GL_UNSIGNED_INT, NULL);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);

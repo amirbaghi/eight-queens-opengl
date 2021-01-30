@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include "Headers/QueenPiece.h"
 #include "Headers/EightQueens.h"
+#include "Headers/Board.h"
 
 #define FLOOR_WIDTH 9
 #define FLOOR_HEIGHT 9
@@ -18,67 +19,27 @@ bool isRotatingRight = false;
 float camera_theta = 0.0;
 
 // Light variables
-float ambient[] = {0.2f, 0.2f, 0.2f, 0.3f};
-float diffuse[] = {0.4f, 0.4f, 0.4f, 0.3f};
-float specular[] = {0.4f, 0.4f, 0.4f, 0.3f};
-float position[] = {200.0f, 300.0f, -400.0f, 0.0f};
+float ambient[] = {0.1f, 0.1f, 0.1f, 0.2f};
+float diffuse[] = {0.5f, 0.5f, 0.5f, 0.2f};
+float specular[] = {0.5f, 0.5f, 0.5f, 0.2f};
+float position[] = {200.0f, 300.0f, -400.0f, 1.0f};
 
-// Material variables
-float mat_ambient[] = {0.25f, 0.148f, 0.06475f, 1.0f};
-float mat_diffuse[] = {0.4f, 0.2368f, 0.1036f, 1.0f};
-float mat_specular[] = {0.774597f, 0.458561f, 0.200621f, 1.0f};
-float shine = 10.8f;
 
 // Queen Pieces vector
 std::vector<QueenPiece> pieces(8);
 
-// Vertex Buffer Object Ids
-GLuint board_vcs_vbo, board_index_vbo;
+// Board Object
+Board board;
 
-// Arrays for the checkered board vertices and the indices for the black and white squares and the outline
+// Array for the checkered board vertices
 GLfloat board_vertices[FLOOR_HEIGHT * FLOOR_WIDTH * 3];
-GLuint black_square_indices[((FLOOR_HEIGHT - 1) * (FLOOR_WIDTH - 1) * 4) / 2];
-GLuint white_square_indices[((FLOOR_HEIGHT - 1) * (FLOOR_WIDTH - 1) * 4) / 2];
-GLuint board_outline_indices[4];
 
 void EightQueens::render_board()
 {
-
-    // glPushAttrib(GL_LINE_BIT);
-    // glLineWidth(3);
-    // glBegin(GL_LINES);
-    // glColor3f(1.0, 0, 0);
-    // glVertex3f(0, 0, 0);
-    // glVertex3f(5, 0, 0);
-    // glColor3f(0, 1.0, 0);
-    // glVertex3f(0, 0, 0);
-    // glVertex3f(0, 5, 0);
-    // glColor3f(0, 0, 1.0);
-    // glVertex3f(0, 0, 0);
-    // glVertex3f(0, 0, 5);
-    // glEnd();
-    // glPopAttrib();
-
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    glBindBuffer(GL_ARRAY_BUFFER, board_vcs_vbo);
-    glVertexPointer(3, GL_FLOAT, 0, NULL);
-
-    // Draw the white squares
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo);
-    glColor4f(0.85, 0.85, 0.85, 1.0);
-    glDrawElements(GL_QUADS, sizeof(white_square_indices) / 4, GL_UNSIGNED_INT, NULL);
-
-    // Draw the black squares
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo + 1);
-    glColor4f(0.1, 0.1, 0.1, 1.0);
-    glDrawElements(GL_QUADS, sizeof(black_square_indices) / 4, GL_UNSIGNED_INT, NULL);
-
-    // Draw the board outline
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo + 2);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_QUADS, sizeof(board_outline_indices) / 4, GL_UNSIGNED_INT, NULL);
+    board.render();
 
     glPopAttrib();
 }
@@ -86,12 +47,6 @@ void EightQueens::render_board()
 void EightQueens::render_objs()
 {
     glMatrixMode(GL_MODELVIEW);
-
-    // Setting material properties for the pieces
-    // glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-    // glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
-    // glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-    // glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shine);
 
     for (QueenPiece piece : pieces)
     {
@@ -107,17 +62,19 @@ void EightQueens::render()
     glClear(GL_DEPTH_BUFFER_BIT);
 
     glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
     glDisable(GL_LIGHTING);
 
     // Render the board
     render_board();
 
     glEnable(GL_LIGHTING);
-    glEnableClientState(GL_NORMAL_ARRAY);
 
     // Render the objects
     render_objs();
 
+    glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
 
@@ -141,32 +98,37 @@ void EightQueens::init_board()
         }
     }
 
-    // Setting the indices for the black and white quads
-    // An initial color is set at the start of each row, then that color is toggled for each quad across the row
-    // The initial color is toggled for the next row to achieve the appropriate coloring for the chess board
-    for (int i = 1, blk_arr_ind = 0, white_arr_ind = 0, current_initial_color = 0; i < FLOOR_WIDTH; i++)
+    std::vector<Square> tiles;
+
+    // Making the tiles
+    // For the tile colors, a current initial color for the row is set and it is toggled across the row for each tile
+    // For the next row, the initial color is also toggled
+    for (int i = 1, current_initial_color = 0; i < FLOOR_WIDTH; i++)
     {
         auto from = (i - 1) * FLOOR_WIDTH;
         auto to = i * FLOOR_WIDTH;
 
         for (int j = 0, current_square_color = current_initial_color; j < FLOOR_HEIGHT - 1; j++)
         {
+            // Setting the vertices in the right order
+            vertex v1 = vertex(board_vertices[from * 3], board_vertices[from * 3 + 1], board_vertices[from * 3 + 2]);
+            vertex v2 = vertex(board_vertices[to * 3], board_vertices[to * 3 + 1], board_vertices[to * 3 + 2]);
+            from += 1;
+            to += 1;
+            vertex v3 = vertex(board_vertices[to * 3], board_vertices[to * 3 + 1], board_vertices[to * 3 + 2]);
+            vertex v4 = vertex(board_vertices[from * 3], board_vertices[from * 3 + 1], board_vertices[from * 3 + 2]);
 
-            // If the current square is to be white, then add the current quad indices to the white square indices array
+            // If the square is supposed to be white, make a white tile with the vertices and add it to the list
             if (current_square_color == 1)
             {
-                white_square_indices[white_arr_ind++] = from++;
-                white_square_indices[white_arr_ind++] = to++;
-                white_square_indices[white_arr_ind++] = to;
-                white_square_indices[white_arr_ind++] = from;
+                Square square(v1, v2, v3, v4, color4(1.0, 1.0, 1.0, 1.0));
+                tiles.push_back(square);
             }
-            // and if the square is to be black, then add the current quad indices to the black square indices array
+            // If the square is supposed to be black, make a black tile with the vertices and add it to the list
             else
             {
-                black_square_indices[blk_arr_ind++] = from++;
-                black_square_indices[blk_arr_ind++] = to++;
-                black_square_indices[blk_arr_ind++] = to;
-                black_square_indices[blk_arr_ind++] = from;
+                Square square(v1, v2, v3, v4, color4(0.0, 0.0, 0.0, 1.0));
+                tiles.push_back(square);
             }
 
             // Toggle the current square color (from black to white and vice versa)
@@ -176,29 +138,7 @@ void EightQueens::init_board()
         current_initial_color = (current_initial_color == 1) ? 0 : 1;
     }
 
-    // Setting the board outline indices
-    board_outline_indices[0] = 0;
-    board_outline_indices[1] = FLOOR_HEIGHT * (FLOOR_WIDTH - 1);
-    board_outline_indices[2] = FLOOR_HEIGHT * (FLOOR_WIDTH - 1) + (FLOOR_HEIGHT - 1);
-    board_outline_indices[3] = 0 + (FLOOR_HEIGHT - 1);
-
-    // Initialzing the board vertex and index buffers
-    glGenBuffers(1, &board_vcs_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, board_vcs_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(board_vertices), board_vertices, GL_STATIC_DRAW);
-
-    glGenBuffers(3, &board_index_vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(white_square_indices), white_square_indices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo + 1);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(black_square_indices), black_square_indices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, board_index_vbo + 2);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(board_outline_indices), board_outline_indices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    board = Board(FLOOR_WIDTH - 1, FLOOR_HEIGHT - 1, tiles);
 }
 
 void EightQueens::init_light()
@@ -245,7 +185,7 @@ void EightQueens::init_objs()
         double z = board_vertices[((row - 1) * 9 + (col - 1)) * 3 + 2] + 0.5;
         double y = 0;
 
-        QueenPiece p(row, col, i, Object3D::vertex(x, y, z));
+        QueenPiece p(row, col, i, vertex(x, y, z));
 
         pieces.push_back(p);
     }
@@ -303,7 +243,7 @@ void EightQueens::mouse_func(int button, int state, int x, int y)
     glPushName(-1);
 
     // PICK MATRIX
-    
+
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
@@ -326,21 +266,22 @@ void EightQueens::mouse_func(int button, int state, int x, int y)
     // RENDER
 
     glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
     glDisable(GL_LIGHTING);
 
     // Render the board
     render_board();
 
     glEnable(GL_LIGHTING);
-    glEnableClientState(GL_NORMAL_ARRAY);
 
     // Render the objects
     render_objs();
 
+    glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
 
-    glPopMatrix();
     glutSwapBuffers();
 
     hits = glRenderMode(GL_RENDER);

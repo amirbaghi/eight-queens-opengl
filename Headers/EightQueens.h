@@ -1,8 +1,10 @@
+#ifndef MY_EIGHTQUEENS_H
+#define MY_EIGHTQUEENS_H
+
 #include <GL/glut.h>
 
 namespace EightQueens
 {
-
     // Keyboard Function
     void keyboard(int key, int x, int y);
 
@@ -49,3 +51,5 @@ namespace EightQueens
     void select(GLint hits, GLuint buffer[]);
 
 } // namespace EightQueens
+
+#endif
