@@ -52,10 +52,10 @@ void Object3D::setColor(color4 color)
 
     this->colors = temp_colors;
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, colors_vbo_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, colors.size() * sizeof(color4), &colors[0], GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo_id);
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(color4), &colors[0], GL_DYNAMIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void Object3D::render()

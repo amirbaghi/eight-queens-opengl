@@ -14,7 +14,6 @@ public:
     void setRowsAndCols(int rows, int cols);
     void render();
 
-private:
     std::vector<Square> tiles;
     int num_of_rows, num_of_cols;
 };

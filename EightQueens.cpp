@@ -24,8 +24,10 @@ float diffuse[] = {0.5f, 0.5f, 0.5f, 0.2f};
 float specular[] = {0.5f, 0.5f, 0.5f, 0.2f};
 float position[] = {200.0f, 300.0f, -400.0f, 1.0f};
 
-// Selected Queen
-QueenPiece selectedPiece;
+// Selection variables
+bool inSelection;
+QueenPiece *selectedPiece;
+Square destination;
 
 // Queen Pieces vector
 std::vector<QueenPiece> pieces;
@@ -297,18 +299,56 @@ void EightQueens::select(GLint hits, GLuint buffer[])
 
     ptr += (hits - 1) * 4 + 3;
 
-    // Search in Queen Pieces
-    std::cout << pieces.size() << std::endl;
-
-    for (std::vector<QueenPiece>::iterator it = pieces.begin(); it != pieces.end(); ++it)
+    // If a queen was selected
+    if ((*ptr) < 10)
     {
-        if (it->isSelected)
+        // Search and update the pieces
+        for (std::vector<QueenPiece>::iterator it = pieces.begin(); it != pieces.end(); it++)
         {
-            it->setIsSelected(false);
+            if ((it->model).name == (*ptr))
+            {
+                if (it->isSelected)
+                {
+                    it->setIsSelected(false);
+                    inSelection = false;
+                }
+                else
+                {
+                    it->setIsSelected(true);
+                    selectedPiece = &(*it);
+                    inSelection = true;
+                }
+            }
+            else if (it->isSelected)
+            {
+                it->setIsSelected(false);
+            }
         }
-        if ((it->model).name == (*ptr))
+    }
+    // If a tile was selected
+    else
+    {
+        // If a piece has already been selected, now we want to choose the tile
+        if (inSelection)
         {
-            it->setIsSelected(true);
+            // Search in tiles
+            for (std::vector<Square>::iterator it = board.tiles.begin(); it != board.tiles.end(); it++)
+            {
+                if (it->name == (*ptr))
+                {
+                    destination = (*it);
+
+                    auto init_motion_time = glutGet(GLUT_ELAPSED_TIME);
+
+                    vertex vd = destination.getVertices()[0];
+                    vd.x += 0.5;
+                    vd.z += 0.5;
+                    selectedPiece->startMoving(init_motion_time, vd);
+
+                    selectedPiece->setIsSelected(false);
+                    inSelection = false;
+                }
+            }
         }
     }
 }
@@ -342,6 +382,13 @@ void EightQueens::timer(int value)
     auto h = glutGet(GLUT_WINDOW_HEIGHT);
 
     camera_config(w, h, camera_theta, camera_fov);
+
+    auto current_time = glutGet(GLUT_ELAPSED_TIME);
+
+    for (std::vector<QueenPiece>::iterator it = pieces.begin(); it != pieces.end(); it++)
+    {
+        it->update(current_time);
+    }
 
     glutTimerFunc(25, timer, value + 1);
 }

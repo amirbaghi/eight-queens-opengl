@@ -12,11 +12,14 @@ public:
     Square();
     Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color, int name);
 
+    std::vector<vertex> getVertices() { return vertices; };
+    
     void initBuffers();
     void render();
 
     int name;
     GLuint vertex_vbo_id, element_vbo_id, normal_vbo_id, color_vbo_id;
+
 private:
     std::vector<vertex> vertices;
     std::vector<GLuint> face;
