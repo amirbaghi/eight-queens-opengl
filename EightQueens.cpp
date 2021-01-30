@@ -24,9 +24,11 @@ float diffuse[] = {0.5f, 0.5f, 0.5f, 0.2f};
 float specular[] = {0.5f, 0.5f, 0.5f, 0.2f};
 float position[] = {200.0f, 300.0f, -400.0f, 1.0f};
 
+// Selected Queen
+QueenPiece selectedPiece;
 
 // Queen Pieces vector
-std::vector<QueenPiece> pieces(8);
+std::vector<QueenPiece> pieces;
 
 // Board Object
 Board board;
@@ -36,12 +38,13 @@ GLfloat board_vertices[FLOOR_HEIGHT * FLOOR_WIDTH * 3];
 
 void EightQueens::render_board()
 {
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glMatrixMode(GL_MODELVIEW);
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     board.render();
 
-    glPopAttrib();
+    glLoadName(-1);
 }
 
 void EightQueens::render_objs()
@@ -94,7 +97,6 @@ void EightQueens::init_board()
             board_vertices[((i * FLOOR_WIDTH + j) * 3)] = x;
             board_vertices[((i * FLOOR_WIDTH + j) * 3) + 1] = 0;
             board_vertices[((i * FLOOR_WIDTH + j) * 3) + 2] = z;
-            camera_fov -= 0.2;
         }
     }
 
@@ -121,13 +123,13 @@ void EightQueens::init_board()
             // If the square is supposed to be white, make a white tile with the vertices and add it to the list
             if (current_square_color == 1)
             {
-                Square square(v1, v2, v3, v4, color4(1.0, 1.0, 1.0, 1.0));
+                Square square(v1, v2, v3, v4, color4(1.0, 1.0, 1.0, 1.0), 10 + ((i - 1) * (FLOOR_WIDTH - 1) + j));
                 tiles.push_back(square);
             }
             // If the square is supposed to be black, make a black tile with the vertices and add it to the list
             else
             {
-                Square square(v1, v2, v3, v4, color4(0.0, 0.0, 0.0, 1.0));
+                Square square(v1, v2, v3, v4, color4(0.0, 0.0, 0.0, 1.0), 10 + ((i - 1) * (FLOOR_WIDTH - 1) + j));
                 tiles.push_back(square);
             }
 
@@ -270,12 +272,10 @@ void EightQueens::mouse_func(int button, int state, int x, int y)
     glEnableClientState(GL_COLOR_ARRAY);
     glDisable(GL_LIGHTING);
 
-    // Render the board
     render_board();
 
     glEnable(GL_LIGHTING);
 
-    // Render the objects
     render_objs();
 
     glDisableClientState(GL_COLOR_ARRAY);
@@ -284,37 +284,32 @@ void EightQueens::mouse_func(int button, int state, int x, int y)
 
     glutSwapBuffers();
 
+    // PROCESS HITS
     hits = glRenderMode(GL_RENDER);
     select(hits, selectBuf);
 }
 
 void EightQueens::select(GLint hits, GLuint buffer[])
 {
-    unsigned int i, j;
-    GLuint names, *ptr;
-    float z1, z2;
-    printf("hits = %d\n", hits);
+    GLuint *ptr;
 
     ptr = (GLuint *)buffer;
-    for (i = 0; i < hits; i++)
+
+    ptr += (hits - 1) * 4 + 3;
+
+    // Search in Queen Pieces
+    std::cout << pieces.size() << std::endl;
+
+    for (std::vector<QueenPiece>::iterator it = pieces.begin(); it != pieces.end(); ++it)
     {
-        names = *ptr;
-        ptr++;
-        z1 = (float)*ptr / 0xffffffff;
-        ptr++;
-        z2 = (float)*ptr / 0xffffffff;
-        ptr++;
-
-        printf(" number of names for hit = %d\n", names);
-        printf(" z1 is %g; z2 is %g\n", z1, z2);
-        printf(" the name is ");
-        for (j = 0; j < names; j++)
+        if (it->isSelected)
         {
-            printf("%d ", *ptr);
-            ptr++;
+            it->setIsSelected(false);
         }
-
-        printf("\n");
+        if ((it->model).name == (*ptr))
+        {
+            it->setIsSelected(true);
+        }
     }
 }
 

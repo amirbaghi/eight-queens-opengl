@@ -14,6 +14,22 @@ QueenPiece::QueenPiece(int row, int col, int name, vertex pos) : QueenPiece()
 
     this->row = row;
     this->col = col;
+
+    this->isSelected = false;
+}
+
+void QueenPiece::setIsSelected(bool isSelected)
+{
+    this->isSelected = isSelected;
+
+    if (this->isSelected)
+    {
+        this->model.setColor(color4(0.0, 1.0, 0.0, 1.0));
+    }
+    else
+    {
+        this->model.setColor(color4(0.0, 0.0, 0.0, 1.0));
+    }
 }
 
 void QueenPiece::render()

@@ -3,7 +3,7 @@
 
 Square::Square(){};
 
-Square::Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color)
+Square::Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color, int name)
 {
     std::vector<vertex> vertices;
     vertices.reserve(4);
@@ -40,6 +40,8 @@ Square::Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color)
     colors.push_back(color);
 
     this->color = colors;
+
+    this->name = name;
 
     Square::initBuffers();
 }

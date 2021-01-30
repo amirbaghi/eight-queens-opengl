@@ -29,6 +29,8 @@ void Object3D::initBuffers()
     glGenBuffers(1, &element_vbo_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo_id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, faces.size() * sizeof(GLuint), &faces[0], GL_STATIC_DRAW);
+    
+    glGenBuffers(1, &colors_vbo_id);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -50,9 +52,10 @@ void Object3D::setColor(color4 color)
 
     this->colors = temp_colors;
 
-    glGenBuffers(1, &colors_vbo_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, colors_vbo_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, colors.size() * sizeof(color4), &colors[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, colors.size() * sizeof(color4), &colors[0], GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Object3D::render()

@@ -10,7 +10,7 @@ class Square
 {
 public:
     Square();
-    Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color);
+    Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color, int name);
 
     void initBuffers();
     void render();
