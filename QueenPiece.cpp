@@ -31,8 +31,21 @@ void QueenPiece::setIsSelected(bool isSelected)
     }
     else
     {
-        this->model.setColor(color4(0.0, 0.0, 0.0, 1.0));
+        if (this->isThreatened)
+        {
+            this->model.setColor(color4(1.0, 0.0, 0.0, 1.0));
+        }
+        else 
+        {
+            this->model.setColor(color4(0.0, 0.0, 0.0, 1.0));
+        }
     }
+}
+
+void QueenPiece::setRowAndCol(int row, int col)
+{
+    this->row = row;
+    this->col = col;
 }
 
 void QueenPiece::startMoving(int time, Square *position)
@@ -144,6 +157,20 @@ void QueenPiece::update(int time)
         default:
             break;
         }
+    }
+}
+
+void QueenPiece::setIsThreatened(bool isThreatened)
+{
+    this->isThreatened = isThreatened;
+
+    if (this->isThreatened)
+    {
+        this->model.setColor(color4(1.0, 0.0, 0.0, 1.0));
+    }
+    else
+    {
+        this->model.setColor(color4(0.0, 0.0, 0.0, 1.0));
     }
 }
 

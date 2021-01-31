@@ -7,7 +7,6 @@
 class QueenPiece
 {
 public:
-
     enum Motion
     {
         ASCENDING,
@@ -19,6 +18,8 @@ public:
     QueenPiece();
     QueenPiece(int row, int col, int name, vertex pos);
 
+    void setIsThreatened(bool isThreatened);
+    void setRowAndCol(int row, int col);
     void startMoving(int time, Square *position);
     void update(int time);
     void setIsSelected(bool isSelected);
@@ -28,9 +29,12 @@ public:
     int row, col;
     bool isSelected;
 
+    bool isThreatened;
+
     bool isMoving;
     Motion motion;
     int motion_init_time;
+
     Square *destination;
     color4 destination_color;
 };

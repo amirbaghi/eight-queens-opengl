@@ -10,7 +10,7 @@ class Square
 {
 public:
     Square();
-    Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color, int name);
+    Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color, int name, int row, int col);
 
     std::vector<vertex> getVertices() { return vertices; };
     std::vector<color4> getColor() { return color; };
@@ -19,7 +19,7 @@ public:
     void initBuffers();
     void render();
 
-    int name;
+    int name, row, col;
     GLuint vertex_vbo_id, element_vbo_id, normal_vbo_id, color_vbo_id;
 
 private:

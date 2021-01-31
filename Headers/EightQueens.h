@@ -1,6 +1,7 @@
 #ifndef MY_EIGHTQUEENS_H
 #define MY_EIGHTQUEENS_H
 
+#include "QueenPiece.h"
 #include <GL/glut.h>
 
 namespace EightQueens
@@ -46,6 +47,12 @@ namespace EightQueens
 
     // Mouse Func Function
     void mouse_func(int button, int state, int x, int y);
+
+    // Check for threats for all pieces
+    void check_for_threats();
+
+    // Check for threats for a piece
+    void check_for_piece_threats(QueenPiece& piece);
 
     // Selection Function
     void select(GLint hits, GLuint buffer[]);

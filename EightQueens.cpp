@@ -125,13 +125,13 @@ void EightQueens::init_board()
             // If the square is supposed to be white, make a white tile with the vertices and add it to the list
             if (current_square_color == 1)
             {
-                Square square(v1, v2, v3, v4, color4(1.0, 1.0, 1.0, 1.0), 10 + ((i - 1) * (FLOOR_WIDTH - 1) + j));
+                Square square(v1, v2, v3, v4, color4(1.0, 1.0, 1.0, 1.0), 10 + ((i - 1) * (FLOOR_WIDTH - 1) + j), i, j + 1);
                 tiles.push_back(square);
             }
             // If the square is supposed to be black, make a black tile with the vertices and add it to the list
             else
             {
-                Square square(v1, v2, v3, v4, color4(0.0, 0.0, 0.0, 1.0), 10 + ((i - 1) * (FLOOR_WIDTH - 1) + j));
+                Square square(v1, v2, v3, v4, color4(0.0, 0.0, 0.0, 1.0), 10 + ((i - 1) * (FLOOR_WIDTH - 1) + j), i, j + 1);
                 tiles.push_back(square);
             }
 
@@ -213,6 +213,9 @@ void EightQueens::init()
 
     // Initializing the lightning
     init_light();
+
+    // Check for initial threats
+    check_for_threats();
 }
 
 void EightQueens::camera_config(int w, int h, float t, float fov)
@@ -364,15 +367,66 @@ void EightQueens::select(GLint hits, GLuint buffer[])
                     // Move only if the destination is valid
                     if ((dest_x == selectedPiece->model.getPosition().x) || (dest_z == selectedPiece->model.getPosition().z) || slope == 1)
                     {
-                        auto init_motion_time = glutGet(GLUT_ELAPSED_TIME);
-                        selectedPiece->startMoving(init_motion_time, &(*it));
+                        // Check if the destination is not occupied
+
+                        auto isOccupied = false;
+
+                        for (QueenPiece& p: pieces)
+                        {
+                            if (p.row == destination.row && p.col == destination.col)
+                                isOccupied = true;
+                        }
+
+                        if (!isOccupied)
+                        {
+                            // Set the new row and col for the selected piece
+                            selectedPiece->setRowAndCol(destination.row, destination.col);
+
+                            // Initiate movement
+                            auto init_motion_time = glutGet(GLUT_ELAPSED_TIME);
+                            selectedPiece->startMoving(init_motion_time, &(*it));
+
+                            // Check for threats in the new situation
+                            check_for_threats();
+                        }
                     }
 
+                    // Unselect
                     selectedPiece->setIsSelected(false);
                     inSelection = false;
                 }
             }
         }
+    }
+}
+
+void EightQueens::check_for_piece_threats(QueenPiece &piece)
+{
+    // Check each piece with the current piece and see if it is threatened
+    for (QueenPiece &p : pieces)
+    {
+        if (piece.row == p.row && piece.col == p.col)
+        {
+            continue;
+        }
+
+        if ((p.row == piece.row) || (p.col == piece.col) || (abs((float)(p.col - piece.col) / (p.row - piece.row)) == 1))
+        {
+            piece.setIsThreatened(true);
+            return;
+        }
+    }
+
+    // If it's not threatened
+    piece.setIsThreatened(false);
+}
+
+void EightQueens::check_for_threats()
+{
+    // Check the threats for each piece
+    for (QueenPiece &piece : pieces)
+    {
+        check_for_piece_threats(piece);
     }
 }
 
