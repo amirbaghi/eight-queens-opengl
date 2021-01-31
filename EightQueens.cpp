@@ -12,7 +12,7 @@
 // Global Variables
 bool isZoomingIn = false;
 bool isZoomingOut = false;
-float camera_fov = 40.0;
+float camera_fov = 20.0;
 
 bool isRotatingLeft = false;
 bool isRotatingRight = false;
@@ -293,11 +293,29 @@ void EightQueens::mouse_func(int button, int state, int x, int y)
 
 void EightQueens::select(GLint hits, GLuint buffer[])
 {
-    GLuint *ptr;
+    // Process hits
+
+    if (hits == 0)
+    {
+        return;
+    }
+    unsigned int i, j;
+    GLuint names, *ptr, minZ, *ptrNames;
 
     ptr = (GLuint *)buffer;
-
-    ptr += (hits - 1) * 4 + 3;
+    minZ = 0xffffffff;
+    for (i = 0; i < hits; i++)
+    {
+        names = *ptr;
+        ptr++;
+        if (*ptr < minZ)
+        {
+            minZ = *ptr;
+            ptrNames = ptr + 2;
+        }
+        ptr += names + 2;
+    }
+    ptr = ptrNames;
 
     // If a queen was selected
     if ((*ptr) < 10)
@@ -344,11 +362,11 @@ void EightQueens::select(GLint hits, GLuint buffer[])
                     auto slope = abs((dest_z - selectedPiece->model.getPosition().z) / (dest_x - selectedPiece->model.getPosition().x));
 
                     // Move only if the destination is valid
-                    if ((dest_x == selectedPiece->model.getPosition().x) || (dest_z == selectedPiece->model.getPosition().z) ||slope == 1){
+                    if ((dest_x == selectedPiece->model.getPosition().x) || (dest_z == selectedPiece->model.getPosition().z) || slope == 1)
+                    {
                         auto init_motion_time = glutGet(GLUT_ELAPSED_TIME);
                         selectedPiece->startMoving(init_motion_time, &(*it));
                     }
-
 
                     selectedPiece->setIsSelected(false);
                     inSelection = false;
