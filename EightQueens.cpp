@@ -338,16 +338,15 @@ void EightQueens::select(GLint hits, GLuint buffer[])
                 {
                     destination = (*it);
 
-                    vertex vd = destination.getVertices()[0];
-                    vd.x += 0.5;
-                    vd.z += 0.5;
+                    auto dest_x = destination.getVertices()[0].x + 0.5;
+                    auto dest_z = destination.getVertices()[0].z + 0.5;
 
-                    auto slope = abs((vd.z - selectedPiece->model.getPosition().z) / (vd.x - selectedPiece->model.getPosition().x));
+                    auto slope = abs((dest_z - selectedPiece->model.getPosition().z) / (dest_x - selectedPiece->model.getPosition().x));
 
                     // Move only if the destination is valid
-                    if ((vd.x == selectedPiece->model.getPosition().x) || (vd.z == selectedPiece->model.getPosition().z) ||slope == 1){
+                    if ((dest_x == selectedPiece->model.getPosition().x) || (dest_z == selectedPiece->model.getPosition().z) ||slope == 1){
                         auto init_motion_time = glutGet(GLUT_ELAPSED_TIME);
-                        selectedPiece->startMoving(init_motion_time, vd);
+                        selectedPiece->startMoving(init_motion_time, &(*it));
                     }
 
 

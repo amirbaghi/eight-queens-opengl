@@ -46,6 +46,21 @@ Square::Square(vertex v1, vertex v2, vertex v3, vertex v4, color4 color, int nam
     Square::initBuffers();
 }
 
+void Square::setColor(color4 color)
+{
+    std::vector<color4> colors;
+    colors.reserve(4);
+    colors.push_back(color);
+    colors.push_back(color);
+    colors.push_back(color);
+    colors.push_back(color);
+
+    this->color = colors;
+
+    glBindBuffer(GL_ARRAY_BUFFER, color_vbo_id);
+    glBufferData(GL_ARRAY_BUFFER, (this->color).size() * sizeof(color4), &(this->color)[0], GL_DYNAMIC_DRAW);
+}
+
 void Square::initBuffers()
 {
     glGenBuffers(1, &vertex_vbo_id);
@@ -54,7 +69,7 @@ void Square::initBuffers()
 
     glGenBuffers(1, &color_vbo_id);
     glBindBuffer(GL_ARRAY_BUFFER, color_vbo_id);
-    glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(color4), &color[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(color4), &color[0], GL_DYNAMIC_DRAW);
 
     glGenBuffers(1, &normal_vbo_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, normal_vbo_id);
@@ -68,7 +83,6 @@ void Square::initBuffers()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-
 void Square::render()
 {
     glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo_id);
@@ -77,10 +91,10 @@ void Square::render()
     glBindBuffer(GL_ARRAY_BUFFER, color_vbo_id);
     glColorPointer(4, GL_FLOAT, 0, NULL);
 
-    glEnable (GL_COLOR_MATERIAL);
-    glColorMaterial (GL_FRONT, GL_DIFFUSE);
-    glColorMaterial (GL_FRONT, GL_SPECULAR);
-    glColorMaterial (GL_FRONT, GL_AMBIENT);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_DIFFUSE);
+    glColorMaterial(GL_FRONT, GL_SPECULAR);
+    glColorMaterial(GL_FRONT, GL_AMBIENT);
 
     glBindBuffer(GL_ARRAY_BUFFER, normal_vbo_id);
     glNormalPointer(GL_DOUBLE, 0, NULL);

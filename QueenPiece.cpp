@@ -35,12 +35,16 @@ void QueenPiece::setIsSelected(bool isSelected)
     }
 }
 
-void QueenPiece::startMoving(int time, vertex position)
+void QueenPiece::startMoving(int time, Square *position)
 {
     this->motion_init_time = time;
     this->isMoving = true;
     this->motion = ASCENDING;
     this->destination = position;
+    this->destination_color = position->getColor()[0];
+
+    // Highlight the destination square
+    this->destination->setColor(color4(1.0, 0.0, 0.0, 1.0));
 }
 
 void QueenPiece::update(int time)
@@ -49,6 +53,11 @@ void QueenPiece::update(int time)
     if (isMoving)
     {
         auto diffTime = (time - motion_init_time) / 1000.0;
+
+        // Get the position for the center of the destination square
+        auto dest_x = destination->getVertices()[0].x + 0.5;
+        auto dest_z = destination->getVertices()[0].z + 0.5;
+
         switch (motion)
         {
         // If the piece is ascending
@@ -69,16 +78,18 @@ void QueenPiece::update(int time)
             break;
         // If the piece is going forward
         case FORWARD:
+
             // If the piece is at the destination
-            if (abs(model.getPosition().x - destination.x) < 0.1 && abs(model.getPosition().z - destination.z) < 0.1)
+            if (abs(model.getPosition().x - dest_x) < 0.1 && abs(model.getPosition().z - dest_z) < 0.1)
             {
                 // Fix the piece at the position
                 vertex p = model.getPosition();
-                p.x = destination.x;
-                p.z = destination.z;
+                p.x = dest_x;
+                p.z = dest_z;
 
                 model.setPosition(p);
 
+                // Change the motion to descending
                 this->motion = DESCENDING;
                 this->motion_init_time = time;
             }
@@ -86,20 +97,20 @@ void QueenPiece::update(int time)
             {
                 vertex p = model.getPosition();
 
-                if (destination.x < model.getPosition().x)
+                if (dest_x < model.getPosition().x)
                 {
                     p.x -= diffTime * 0.1;
                 }
-                else if (destination.x > model.getPosition().x)
+                else if (dest_x > model.getPosition().x)
                 {
                     p.x += diffTime * 0.1;
                 }
 
-                if (destination.z < model.getPosition().z)
+                if (dest_z < model.getPosition().z)
                 {
                     p.z -= diffTime * 0.1;
                 }
-                else if (destination.z > model.getPosition().z)
+                else if (dest_z > model.getPosition().z)
                 {
                     p.z += diffTime * 0.1;
                 }
@@ -116,8 +127,12 @@ void QueenPiece::update(int time)
 
                 model.setPosition(p);
 
+                // Set no motion for the piece
                 this->motion = MOTIONLESS;
                 this->isMoving = false;
+
+                // Set back the original color of the destination square
+                this->destination->setColor(this->destination_color);
             }
             else
             {

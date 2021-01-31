@@ -2,6 +2,7 @@
 #define MY_QUEENPIECE_H
 
 #include "Object3D.h"
+#include "Square.h"
 
 class QueenPiece
 {
@@ -18,7 +19,7 @@ public:
     QueenPiece();
     QueenPiece(int row, int col, int name, vertex pos);
 
-    void startMoving(int time, vertex position);
+    void startMoving(int time, Square *position);
     void update(int time);
     void setIsSelected(bool isSelected);
     void render();
@@ -30,7 +31,8 @@ public:
     bool isMoving;
     Motion motion;
     int motion_init_time;
-    vertex destination;
+    Square *destination;
+    color4 destination_color;
 };
 
 #endif
