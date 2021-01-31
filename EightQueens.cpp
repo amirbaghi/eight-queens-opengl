@@ -371,7 +371,7 @@ void EightQueens::select(GLint hits, GLuint buffer[])
 
                         auto isOccupied = false;
 
-                        for (QueenPiece& p: pieces)
+                        for (QueenPiece &p : pieces)
                         {
                             if (p.row == destination.row && p.col == destination.col)
                                 isOccupied = true;
@@ -504,6 +504,17 @@ void EightQueens::keyboard(int key, int x, int y)
     }
 }
 
+void EightQueens::keyboard_options(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+    case 'q':
+    case 'Q':
+        exit(0);
+        break;
+    }
+}
+
 void EightQueens::keyboard_up(int key, int x, int y)
 {
     switch (key)
@@ -547,6 +558,7 @@ int EightQueens::main(int argc, char **argv)
     glutReshapeFunc(reshape);
     glutSpecialFunc(keyboard);
     glutSpecialUpFunc(keyboard_up);
+    glutKeyboardFunc(keyboard_options);
     glutMouseFunc(mouse_func);
     glutTimerFunc(25, timer, 0);
     glutMainLoop();

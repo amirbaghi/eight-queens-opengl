@@ -57,6 +57,9 @@ namespace EightQueens
     // Selection Function
     void select(GLint hits, GLuint buffer[]);
 
+    // Keystroke function
+    void keyboard_options(unsigned char key, int x, int y);
+
 } // namespace EightQueens
 
 #endif
